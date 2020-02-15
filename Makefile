@@ -48,8 +48,8 @@ install-helm:
 	fi
 
 helm: install-helm
-	@HELM_REPO_STABLE_INSTALLED=`helm repo list | grep stable` ; \
+	@HELM_REPO_STABLE_INSTALLED=`helm --kubeconfig=${_KUBE_CONFIG_FALCO_VAGRANT_FILE} repo list | grep stable` ; \
 	if [ -z "$$HELM_REPO_STABLE_INSTALLED" ]; then \
-		helm repo add stable https://kubernetes-charts.storage.googleapis.com/ ; \
+		helm --kubeconfig=${_KUBE_CONFIG_FALCO_VAGRANT_FILE} repo add stable https://kubernetes-charts.storage.googleapis.com/ ; \
 	fi; \
-	helm install falco stable/falco --set image.tag=${_FALCO_VERSION}
+	helm --kubeconfig=${_KUBE_CONFIG_FALCO_VAGRANT_FILE} install falco stable/falco --set image.tag=${_FALCO_VERSION}

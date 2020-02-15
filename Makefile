@@ -6,7 +6,7 @@ _OSTYPE=`uname -a | cut -f 1 -d ' ' | tr '[:upper:]' '[:lower:]'`
 _VAGRANTKUBE_FALCO_VERSION=0.19.0
 
 # Vagrant targets
-.PHONY: vagrant
+.PHONY: vagrant vagrant-download-kube-config vagrant-update-kube-config-dashboard-token
 
 vagrant:
 	@vagrant plugin install vagrant-vbguest
@@ -40,7 +40,7 @@ minikube: minikube-install
 	minikube-${_MINIKUBE_VERSION} dashboard;
 
 # Helm targets
-.PHONY: helm-install helm
+.PHONY: helm-install helm-add-repo helm-falco-minikube-install helm-falco-vagrant-kube-install
 
 helm-install:
 	@HELM_PATH=`which helm` && \

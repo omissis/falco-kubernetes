@@ -143,7 +143,7 @@ vagrant-kubernetes-dashboard-docker:
 	$(call run-docker-kubectl,${_KUBE_CONFIG_FALCO_VAGRANT_FILE},make vagrant-kubernetes-dashboard)
 
 # Kubernetes on AWS targets
-.PHONY: aws-kubernetes aws-kubernetes-docker aws-kubernetes-dashboard
+.PHONY: aws-kubernetes aws-kubernetes-docker aws-kubernetes-dashboard aws-kubernetes-dashboard-docker
 
 aws-kubernetes:
 	$(MAKE) symlink-mitogen

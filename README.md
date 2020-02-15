@@ -77,8 +77,7 @@ In case you need to verify very specific use-cases, you can also deploy a multi-
 ```sh
 make vagrant
 make -f ansible/Makefile vagrant-kubernetes-multi
-vagrant ssh kube1
-# copy the config from vagrant's /etc/kubernetes/admin.conf and tune it to your local $HOME/.kube/config
+make vagrant-download-kube-config
 make kubernetes-install-dashboard
 ```
 

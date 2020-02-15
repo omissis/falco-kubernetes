@@ -52,6 +52,8 @@ Note: minikube is pinned to `1.4.0` as it's the last version for which the pre-b
 
 Requirements:
 
+- jq
+- yq
 - docker
 - vagrant (+ 2 plugins: vagrant-vbguest, vagrant-scp. they are installed by the `make vagrant` target)
 - ansible (optional if using `-docker` makefile targets)

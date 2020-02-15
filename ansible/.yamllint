@@ -1,0 +1,8 @@
+---
+
+extends: default
+
+ignore: |
+  .roles
+  .vagrant
+  files

@@ -1,0 +1,21 @@
+---
+
+# Swap vars
+swap_file_state: absent
+
+# Security vars
+security_ssh_port: 10022
+security_ssh_password_authentication: "no"
+security_ssh_permit_root_login: "no"
+security_ssh_usedns: "no"
+security_autoupdate_enabled: false
+security_autoupdate_mail_on_error: false
+security_fail2ban_enabled: true
+
+# Docker vars
+docker_install_compose: false
+
+# Kubernetes vars
+kubernetes_version: '1.16'
+kubernetes_allow_pods_on_master: false
+kubernetes_enable_web_ui: true

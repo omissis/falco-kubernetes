@@ -1,0 +1,33 @@
+---
+- hosts: kubernetes
+  gather_facts: true
+  become: true
+  remote_user: ubuntu
+  vars_files:
+    - vars/kubernetes.yml
+  pre_tasks:
+    - name: copy customized flannel manifest file to the machine
+      copy:
+        src: "{{ playbook_dir }}/files/kube-flannel.yml"
+        dest: "{{ kubernetes_flannel_manifest_file }}"
+        owner: root
+        group: root
+        mode: '0600'
+      when: ansible_provider is defined and ansible_provider == "vagrant"
+  roles:
+    - {
+      role: geerlingguy.swap,
+      tags: ['swap']
+    }
+    - {
+      role: geerlingguy.security,
+      tags: ['security']
+    }
+    - {
+      role: geerlingguy.docker,
+      tags: ['docker']
+    }
+    - {
+      role: geerlingguy.kubernetes,
+      tags: ['kubernetes']
+    }

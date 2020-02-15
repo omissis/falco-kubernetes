@@ -1,0 +1,10 @@
+.env
+.terraform
+.terraformrc
+.vagrant
+.vault_pass.txt
+*.bak
+ansible/.roles
+ansible/*-console.log
+secrets.auto.tfvars
+terraform/.plugin-cache

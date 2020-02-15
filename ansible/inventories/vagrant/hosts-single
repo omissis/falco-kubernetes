@@ -1,0 +1,13 @@
+[kubernetes]
+kube1 ansible_host=192.168.10.2
+
+[kubernetes:vars]
+ansible_provider=vagrant
+ansible_ssh_private_key_file=~/.vagrant.d/insecure_private_key
+ansible_ssh_user=vagrant
+domain=falcoctl.int
+kubernetes_allow_pods_on_master=true
+kubernetes_apiserver_advertise_address='192.168.10.2'
+kubernetes_flannel_manifest_file=/tmp/kube-flannel.yml
+kubernetes_kubelet_extra_args='--node-ip={{ansible_host}}'
+docker_users="['vagrant']"

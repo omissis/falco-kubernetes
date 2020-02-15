@@ -1,6 +1,9 @@
-_FALCO_VERSION=0.17.1
 _KUBE_CONFIG_FALCO_VAGRANT_FILE=${HOME}/.kube/config-falco-vagrant
+_HELM_VERSION=3.1.0
+_MINIKUBE_FALCO_VERSION=0.17.1
 _MINIKUBE_VERSION=1.4.0
+_OSTYPE=`uname -a | cut -f 1 -d ' ' | tr '[:upper:]' '[:lower:]'`
+_VAGRANTKUBE_FALCO_VERSION=0.19.0
 
 # Vagrant targets
 .PHONY: vagrant
@@ -25,31 +28,49 @@ vagrant-update-kube-config-dashboard-token:
 # Minikube targets
 .PHONY: minikube-install minikube
 
-# TODO: add linux support
 minikube-install:
 	@if [ ! -f /usr/local/bin/minikube-${_MINIKUBE_VERSION} ]; then \
-		curl -LO https://storage.googleapis.com/minikube/releases/v${_MINIKUBE_VERSION}/minikube-darwin-amd64 -o $$HOME && \
+		curl -LO https://storage.googleapis.com/minikube/releases/v${_MINIKUBE_VERSION}/minikube-${_OSTYPE}-amd64 -o $$HOME && \
 		sudo install $$HOME/minikube-darwin-amd64 /usr/local/bin/minikube-${_MINIKUBE_VERSION} && \
 		rm $$HOME/minikube-darwin-amd64 && \
 	fi
 
-minikube: install-minikube
+minikube: minikube-install
 	@minikube-${_MINIKUBE_VERSION} start --vm-driver=hyperkit --memory=2048 && \
 	minikube-${_MINIKUBE_VERSION} dashboard;
 
 # Helm targets
 .PHONY: helm-install helm
 
-# TODO: add linux support
-install-helm:
+helm-install:
 	@HELM_PATH=`which helm` && \
 	if [ ! -f $$HELM_PATH ]; then \
-		brew install helm; \
+		case "${_OSTYPE}" in \
+			darwin*) \
+				brew install helm; \
+			;; \
+			linux*) \
+				cd /tmp && \
+				curl https://get.helm.sh/helm-v${_HELM_VERSION}-linux-amd64.tar.gz -o /tmp/helm.tgz && \
+				tar xfz /tmp/helm.tgz && \
+				sudo cp /tmp/linux-amd64/helm /usr/local/bin/helm && \
+				chmod 0755 /usr/local/bin/helm ; \
+			;; \
+			*) \
+				echo "unsupported os type: '${_OSTYPE}'."; \
+				exit 1; \
+			;; \
+		esac
 	fi
 
-helm: install-helm
-	@HELM_REPO_STABLE_INSTALLED=`helm --kubeconfig=${_KUBE_CONFIG_FALCO_VAGRANT_FILE} repo list | grep stable` ; \
+helm-add-repo: install-helm
+	@HELM_REPO_STABLE_INSTALLED=`helm --kubeconfig=${_KUBE_CONFIG_FALCO_VAGRANT_FILE} repo list | grep stable` && \
 	if [ -z "$$HELM_REPO_STABLE_INSTALLED" ]; then \
 		helm --kubeconfig=${_KUBE_CONFIG_FALCO_VAGRANT_FILE} repo add stable https://kubernetes-charts.storage.googleapis.com/ ; \
-	fi; \
-	helm --kubeconfig=${_KUBE_CONFIG_FALCO_VAGRANT_FILE} install falco stable/falco --set image.tag=${_FALCO_VERSION}
+	fi
+
+helm-falco-minikube-install: helm-add-repo
+	helm --kubeconfig=${_KUBE_CONFIG_FALCO_VAGRANT_FILE} install falco stable/falco --set image.tag=${_MINIKUBE_FALCO_VERSION}
+
+helm-falco-vagrant-kube-install: helm-add-repo
+	helm --kubeconfig=${_KUBE_CONFIG_FALCO_VAGRANT_FILE} install falco stable/falco --set image.tag=${_VAGRANTKUBE_FALCO_VERSION}

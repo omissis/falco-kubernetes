@@ -4,6 +4,7 @@
 .vagrant
 .vault_pass.txt
 *.bak
+*.log
 ansible/.roles
 ansible/*-console.log
 secrets.auto.tfvars

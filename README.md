@@ -65,7 +65,9 @@ This option will setup a single vagrant box and deploy kubernetes on top of it: 
 make vagrant
 make -f ansible/Makefile vagrant-kubernetes-single
 make vagrant-download-kube-config
-make kubernetes-install-dashboard
+make vagrant-update-kube-config-dashboard-token
+make -f ansible/Makefile vagrant-kubernetes-dashboard
+open http://127.0.0.1:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
 ```
 
 ### Vagrant multi node setup 💪
@@ -80,10 +82,12 @@ In case you need to verify very specific use-cases, you can also deploy a multi-
 make vagrant
 make -f ansible/Makefile vagrant-kubernetes-multi
 make vagrant-download-kube-config
-make kubernetes-install-dashboard
+make vagrant-update-kube-config-dashboard-token
+make -f ansible/Makefile vagrant-kubernetes-dashboard
+open http://127.0.0.1:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
 ```
 
-## AWS kubernetes installation 🤯
+### AWS kubernetes installation 🤯
 
 Coming soon. ish.
 
@@ -94,6 +98,20 @@ sed "s/__YOUR_EMAIL_ADDRESS__/your.actual.email.address@example.com/g" .env
 
 ## Falco installation
 
+### Minikube
+
 ```sh
-make helm
+make helm-falco-minikube-install
 ```
+
+### Vagrant
+
+```sh
+make helm-falco-vagrant-kube-install
+```
+
+## FAQ
+
+### Falco's pod won't download the probe version I specified, what's wrong?
+
+Have a look at this list to see if there's an available, pre-compiled probe for your version of falco and linux kernel: https://s3.amazonaws.com/download.draios.com/stable/sysdig-probe-binaries/index.html

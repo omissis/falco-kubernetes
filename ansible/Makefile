@@ -1,23 +1,23 @@
 _ANSIBLE_DIR=`pwd`
-_ANSIBLE_ROLES_DIR=${HOME}/.ansible/roles/
 _DOCKER_ANSIBLE_IMAGE=mullnerz/ansible-playbook:2.9.1
 _DOCKER_FILELINT_IMAGE=cytopia/file-lint:0.3
 _DOCKER_KUBECTL_IMAGE=bitnami/kubectl:1.17.3
 _DOCKER_YAMLLINT_IMAGE=cytopia/yamllint:1.20
+_DOCKER_WORK_DIR=/srv
 _FILELINT_BINDIR=/usr/bin
 _FILELINT_IGNORE_PATHS=.git/,.github/,.plugin-cache,.roles,.vagrant,vendor/
-_KUBE_CONFIG_FALCO_AWS_FILE=${HOME}/.kube/config-falco-aws
-_KUBE_CONFIG_FALCO_VAGRANT_FILE=${HOME}/.kube/config-falco-vagrant
+_FILENAME := $(lastword $(MAKEFILE_LIST))
+_KUBE_CONFIG_FALCO_AWS_FILE=${HOME}/.kube/config-aws-falco
+_KUBE_CONFIG_FALCO_VAGRANT_FILE=${HOME}/.kube/config-vagrant-falco
 _KUBE_DASHBOARD_VERSION=v2.0.0-rc5
 _OSTYPE=`uname -a | cut -f 1 -d ' ' | tr '[:upper:]' '[:lower:]'`
-_WORK_DIR=/srv
 
 # $1: docker image
 # $2: command
 define run-docker
 	@docker run -it --rm \
-	-v ${_PACKER_DIR}:${_WORK_DIR} \
-	-w ${_WORK_DIR} \
+	-v ${_PACKER_DIR}:${_DOCKER_WORK_DIR} \
+	-w ${_DOCKER_WORK_DIR} \
 	$1 \
 	$2
 endef
@@ -27,9 +27,9 @@ define run-docker-ansible-playbook
 	@docker run -it --rm \
 	--entrypoint="" \
 	--env-file=.env \
-	-v ${_ANSIBLE_ROLES_DIR}:/root/.ansible/roles/ \
-	-v ${_ANSIBLE_DIR}:${_WORK_DIR} \
-	-w ${_WORK_DIR} \
+	-v ${HOME}/.ansible/roles/:/root/.ansible/roles/ \
+	-v ${_ANSIBLE_DIR}:${_DOCKER_WORK_DIR} \
+	-w ${_DOCKER_WORK_DIR} \
 	${_DOCKER_ANSIBLE_IMAGE} \
 	/bin/sh -c "apk update && apk add curl make && $1"
 endef
@@ -64,13 +64,12 @@ update-kube-flannel-manifest:
 symlink-mitogen:
 	@case "${_OSTYPE}" in \
 		darwin*) \
-			$(MAKE) symlink-mitogen-macos; \
+			$(MAKE) -f ${_FILENAME} symlink-mitogen-macos; \
 		;; \
 		linux*) \
 			cat /etc/*-release | grep -q debian; \
-			if [ $$? -eq 0 ] \
-			then \
-				$(MAKE) symlink-mitogen-debian; \
+			if [ $$? -eq 0 ]; then \
+				$(MAKE) -f ${_FILENAME} symlink-mitogen-debian; \
 			else \
 				echo "unsupported linux type."; \
 				exit 1; \
@@ -122,16 +121,14 @@ deps-docker:
 .PHONY: vagrant-kubernetes-multi vagrant-kubernetes-multi-docker
 .PHONY: vagrant-kubernetes-dashboard vagrant-kubernetes-dashboard-docker
 
-vagrant-kubernetes-single:
-	$(MAKE) symlink-mitogen
-	@ansible-playbook -i inventories/vagrant/hosts-single kubernetes.yml
+vagrant-kubernetes-single: symlink-mitogen
+	@cd ansible && ansible-playbook -i inventories/vagrant/hosts-single kubernetes.yml
 
 vagrant-kubernetes-single-docker:
 	$(call run-docker-ansible-playbook,make vagrant-kubernetes-single)
 
-vagrant-kubernetes-multi:
-	$(MAKE) symlink-mitogen
-	@ansible-playbook -i inventories/vagrant/hosts-multi kubernetes.yml
+vagrant-kubernetes-multi: symlink-mitogen
+	@cd ansible && ansible-playbook -i inventories/vagrant/hosts-multi kubernetes.yml
 
 vagrant-kubernetes-multi-docker:
 	$(call run-docker-ansible-playbook,make vagrant-kubernetes-multi)
@@ -145,9 +142,8 @@ vagrant-kubernetes-dashboard-docker:
 # Kubernetes on AWS targets
 .PHONY: aws-kubernetes aws-kubernetes-docker aws-kubernetes-dashboard aws-kubernetes-dashboard-docker
 
-aws-kubernetes:
-	$(MAKE) symlink-mitogen
-	@ansible-playbook -i inventories/aws/hosts kubernetes.yml
+aws-kubernetes: symlink-mitogen
+	@cd ansible && ansible-playbook -i inventories/aws/hosts kubernetes.yml
 
 aws-kubernetes-docker:
 	$(call run-docker-ansible-playbook,make aws-kubernetes)

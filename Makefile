@@ -1,4 +1,4 @@
-_KUBE_CONFIG_FALCO_VAGRANT_FILE=${HOME}/.kube/config-falco-vagrant
+_KUBE_CONFIG_FALCO_VAGRANT_FILE=${HOME}/.kube/config-vagrant-falco
 _HELM_VERSION=3.1.0
 _MINIKUBE_FALCO_VERSION=0.17.1
 _MINIKUBE_VERSION=1.4.0
@@ -43,8 +43,8 @@ minikube: minikube-install
 .PHONY: helm-install helm-add-repo helm-falco-minikube-install helm-falco-vagrant-kube-install
 
 helm-install:
-	@HELM_PATH=`which helm` && \
-	if [ ! -f $$HELM_PATH ]; then \
+	@HELM_PATH=`which helm` ; \
+	if [ -z "$$HELM_PATH" ] || [ ! -f "$$HELM_PATH" ]; then \
 		case "${_OSTYPE}" in \
 			darwin*) \
 				brew install helm; \
@@ -60,10 +60,10 @@ helm-install:
 				echo "unsupported os type: '${_OSTYPE}'."; \
 				exit 1; \
 			;; \
-		esac
+		esac \
 	fi
 
-helm-add-repo: install-helm
+helm-add-repo: helm-install
 	@HELM_REPO_STABLE_INSTALLED=`helm --kubeconfig=${_KUBE_CONFIG_FALCO_VAGRANT_FILE} repo list | grep stable` && \
 	if [ -z "$$HELM_REPO_STABLE_INSTALLED" ]; then \
 		helm --kubeconfig=${_KUBE_CONFIG_FALCO_VAGRANT_FILE} repo add stable https://kubernetes-charts.storage.googleapis.com/ ; \
